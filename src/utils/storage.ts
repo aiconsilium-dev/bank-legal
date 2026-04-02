@@ -21,6 +21,9 @@ export const storage = {
   },
   clearUser() {
     this.remove('user');
+    this.remove('currentCase');
+    this.remove('currentForm');
+    this.remove('history');
   },
   getCurrentCase() {
     return this.get('currentCase');
@@ -33,5 +36,17 @@ export const storage = {
   },
   setCurrentForm(data: Record<string, string>) {
     this.set('currentForm', data);
+  },
+  getHistory() {
+    return this.get('history') || [];
+  },
+  addHistory(item: unknown) {
+    const history = this.getHistory();
+    history.unshift(item);
+    this.set('history', history.slice(0, 50));
+  },
+  clearCurrentSession() {
+    this.remove('currentCase');
+    this.remove('currentForm');
   },
 };
