@@ -78,14 +78,11 @@ export default function Consult() {
     const node = getNode(newPath);
     if (!node) return;
     setTimeout(() => {
-      if ('result' in node) {
-        const caseData = CASES[(node as any).result];
-        if (!caseData) return;
-        setCurrentCaseId((node as any).result);
-        const resultCard: ResultCard = { caseId: (node as any).result, caseName: caseData.name, documentCount: caseData.documents.length, estimatedTime: caseData.estimatedTime };
-        setMessages(prev => [...prev, { id: newId(), role: 'ai', content: '분석이 완료되었습니다.', timestamp: new Date(), resultCard }]);
+      if ('result' in node && typeof (node as any).result === 'string') {
+        // result가 텍스트면 바로 표시
+        setMessages(prev => [...prev, { id: newId(), role: 'ai', content: (node as any).result, timestamp: new Date() }]);
         setDone(true);
-      } else {
+      } else if ('question' in node && 'options' in node) {
         setMessages(prev => [...prev, { id: newId(), role: 'ai', content: (node as any).question, timestamp: new Date(), quickOptions: Object.keys((node as any).options) }]);
         setPath(newPath);
       }
@@ -104,15 +101,10 @@ export default function Consult() {
     const matched = matchCaseFromText(text);
     if (matched) {
       const node = decisionTree[matched];
-      if (node && 'result' in node) {
-        const caseData = CASES[(node as any).result];
-        if (caseData) {
-          setCurrentCaseId((node as any).result);
-          const rc: ResultCard = { caseId: (node as any).result, caseName: caseData.name, documentCount: caseData.documents.length, estimatedTime: caseData.estimatedTime };
-          setMessages(prev => [...prev, { id: newId(), role: 'ai', content: `"${matched}" 케이스로 분석되었습니다.`, timestamp: new Date(), resultCard: rc }]);
-          setDone(true);
-          return;
-        }
+      if (node && 'result' in node && typeof (node as any).result === 'string') {
+        setMessages(prev => [...prev, { id: newId(), role: 'ai', content: (node as any).result, timestamp: new Date() }]);
+        setDone(true);
+        return;
       }
       if (node && 'question' in node) {
         setMessages(prev => [...prev, {
